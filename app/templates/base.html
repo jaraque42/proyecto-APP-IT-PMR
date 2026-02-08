@@ -22,7 +22,20 @@
       }
       html, body {height:100%; width:100%; max-width:100%; margin:0; padding:0}
       body{background:var(--bg);color:var(--text);width:100%;max-width:100%;font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
-      header{background:var(--panel);background-image:var(--panel);padding:14px 20px;border-bottom:1px solid rgba(43,22,64,0.06);display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;position:relative}
+      /* Logo de fondo: usa el logo estático pero con baja opacidad para no interferir */
+      body::before{
+        content: "";
+        position:fixed;
+        inset:0;
+        background-image: url('{{ url_for('static', filename='logo.png') }}');
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: 80vmin;
+        opacity: 0.06;
+        pointer-events: none;
+        z-index: 0;
+      }
+      header{background:var(--panel);background-image:var(--panel);padding:14px 20px;border-bottom:1px solid rgba(43,22,64,0.06);display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;position:relative;z-index:10}
       a{color:var(--accent)}
       h1,h2{color:var(--text);margin:0;display:flex;align-items:center;gap:12px}
       /* section titles inside cards */
@@ -31,7 +44,7 @@
       .site-title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;display:flex;align-items:center;gap:12px}
       .site-logo{height:40px;width:auto;border-radius:6px;display:block;max-width:140px;object-fit:contain}
       .logo-wrap{height:40px;overflow:visible;border-radius:6px;display:inline-flex;align-items:center;flex:0 0 auto;padding-right:8px}
-      main{padding:28px 36px;max-width:100% !important;width:100% !important;margin:0;box-sizing:border-box}
+      main{padding:28px 36px;max-width:100% !important;width:100% !important;margin:0;box-sizing:border-box;position:relative;z-index:10}
       .card{background:var(--card-bg);padding:14px;border-radius:10px;margin-bottom:16px;border:1px solid rgba(43,22,64,0.06);max-width:100% !important;width:100% !important;box-shadow:0 6px 18px rgba(43,22,64,0.04)}
       .form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
       /* filter-row used in history pages */
@@ -53,7 +66,7 @@
       .dropdown-button{background:var(--accent);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.12)}
       .dropdown-button:hover{filter:brightness(0.97)}
       .dropdown-button:focus{outline:3px solid rgba(255,106,0,0.18);outline-offset:2px}
-      .dropdown-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--card-bg);border:1px solid rgba(43,22,64,0.06);border-radius:8px;box-shadow:0 8px 24px rgba(43,22,64,0.08);min-width:180px;display:none;padding:8px;z-index:50}
+      .dropdown-menu{position:fixed;right:20px;top:68px;background:var(--card-bg);border:1px solid rgba(43,22,64,0.06);border-radius:8px;box-shadow:0 8px 24px rgba(43,22,64,0.08);min-width:180px;display:none;padding:8px;z-index:2147483647}
       .dropdown.open .dropdown-menu{display:block}
       .dropdown-menu a{display:block;padding:8px 10px;color:var(--text);text-decoration:none;border-radius:6px}
       .dropdown-menu a:hover{background:rgba(91,45,130,0.04)}
@@ -107,18 +120,63 @@
         const menuBtn = document.getElementById('menuToggle')
         const dropdown = document.querySelector('.dropdown')
         if(menuBtn && dropdown){
-          menuBtn.addEventListener('click', function(e){
-            const open = dropdown.classList.toggle('open')
-            menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false')
-          })
-          document.addEventListener('click', function(ev){
-            if(!dropdown.contains(ev.target)){
-              dropdown.classList.remove('open')
-              menuBtn.setAttribute('aria-expanded','false')
-            }
-          })
-          document.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ dropdown.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false') } })
+          // move menu to body so it's not clipped by stacking contexts
+          const menu = dropdown.querySelector('.dropdown-menu')
+          if(menu){
+            menu.style.position = 'fixed'
+            menu.style.display = 'none'
+            document.body.appendChild(menu)
+          }
+
+          function openMenu(){
+            if(!menu) return
+            const rect = menuBtn.getBoundingClientRect()
+            // ensure menu fits within viewport horizontally
+            menu.style.display = 'block'
+            menu.style.zIndex = '2147483647'
+            const mw = menu.offsetWidth || 200
+            let left = rect.right - mw
+            if(left < 8) left = 8
+            if(left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8
+            menu.style.left = left + 'px'
+            menu.style.top = (rect.bottom + 8) + 'px'
+            menuBtn.setAttribute('aria-expanded','true')
+          }
+
+          function closeMenu(){ if(menu){ menu.style.display = 'none' } menuBtn.setAttribute('aria-expanded','false') }
+
+          menuBtn.addEventListener('click', function(e){ e.stopPropagation(); if(menu && menu.style.display==='block'){ closeMenu() } else { openMenu() } })
+
+          document.addEventListener('click', function(ev){ if(menu && !menu.contains(ev.target) && ev.target !== menuBtn){ closeMenu() } })
+          document.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ closeMenu() } })
+          window.addEventListener('resize', function(){ if(menu && menu.style.display==='block'){ openMenu() } })
         }
+
+          // Client-side validation for receive / deliver forms
+          function validImeiClient(v){ return /^[0-9]{15}$/.test((v||'').trim()) }
+          function validUserSitumClient(v){ return /^[^@\s]+@mitie\.es$/i.test((v||'').trim()) }
+          function validNameClient(v){ if(!v) return false; v = v.trim(); if(v !== v.toLowerCase()) return false; if(/[0-9]/.test(v)) return false; if(/[.,]/.test(v)) return false; const parts = v.split(/\s+/); return parts.length === 3 }
+          function validPhoneClient(v){ return /^[0-9]{9}$/.test((v||'').trim()) }
+
+          function attachFormValidation(selector){
+            const form = document.querySelector(selector)
+            if(!form) return
+            form.addEventListener('submit', function(e){
+              const imei = form.querySelector('[name=imei]') ? form.querySelector('[name=imei]').value : ''
+              const user = form.querySelector('[name=user_situm]') ? form.querySelector('[name=user_situm]').value : ''
+              const name = form.querySelector('[name=name]') ? form.querySelector('[name=name]').value : ''
+              const phone = form.querySelector('[name=phone]') ? form.querySelector('[name=phone]').value : ''
+              const errors = []
+              if(!validImeiClient(imei)) errors.push('IMEI inválido: debe tener 15 dígitos numéricos')
+              if(!validUserSitumClient(user)) errors.push('Usuario Situm inválido: debe ser un email en el dominio mitie.es')
+              if(!validNameClient(name)) errors.push('Nombre inválido: formato "apellido1 apellido2 nombre", solo minúsculas, sin números, comas ni puntos')
+              if(!validPhoneClient(phone)) errors.push('Teléfono inválido: debe contener exactamente 9 dígitos')
+              if(errors.length){ e.preventDefault(); alert(errors.join('\n')); return false }
+            })
+          }
+
+          attachFormValidation('form[action="/receive"]')
+          attachFormValidation('form[action="/deliver"]')
       })
     </script>
   </head>
