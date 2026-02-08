@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Histórico de Recepciones</h2>
+<table>
+  <thead><tr><th>ID</th><th>IMEI</th><th>Recibido por</th><th>Fecha</th><th>Notas</th></tr></thead>
+  <tbody>
+  {% for it in items %}
+    <tr>
+      <td>{{ it.id }}</td>
+      <td>{{ it.device.imei if it.device else '' }}</td>
+      <td>{{ it.received_by }}</td>
+      <td>{{ it.timestamp }}</td>
+      <td>{{ it.notes }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

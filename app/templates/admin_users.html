@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Administración de Usuarios</h2>
+<section class="card">
+  <h3>Crear usuario</h3>
+  <form method="post" action="{{ url_for('main.admin_users') }}" class="admin-form">
+    <label>Usuario <input name="username" type="text" required></label>
+    <label>Contraseña <input name="password" type="password" required></label>
+    <label>Rol
+      <select name="role">
+        <option value="admin">Admin (gestión completa)</option>
+        <option value="operator" selected>Operador (recepcionar y entregar)</option>
+        <option value="readonly">Sólo lectura (ver históricos)</option>
+      </select>
+    </label>
+    <button type="submit">Crear</button>
+  </form>
+</section>
+ <table>
+   <thead><tr><th>ID</th><th>Usuario</th><th>Rol</th><th>Descripción</th></tr></thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.role or ('admin' if u.is_admin else 'operator') }}</td>
+      <td>
+        {% if u.role == 'admin' %}Gestiona usuarios, exporta CSV y descarga archivos
+        {% elif u.role == 'readonly' %}Sólo puede ver históricos
+        {% else %}Puede recepcionar y entregar dispositivos
+        {% endif %}
+      </td>
+      <td>
+        <a href="{{ url_for('main.edit_user', user_id=u.id) }}">Editar</a>
+        {% if current_user.id != u.id %}
+        <form method="post" action="{{ url_for('main.delete_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Eliminar usuario?')">
+          <button type="submit">Eliminar</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

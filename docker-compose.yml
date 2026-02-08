@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apassword
+      POSTGRES_DB: appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - appnet
+
+  web:
+    build: .
+    command: gunicorn -b 0.0.0.0:8000 manage:app
+    environment:
+      - DATABASE_URL=postgresql://appuser:apassword@db:5432/appdb
+      - FLASK_ENV=production
+      - SECRET_KEY=change-me
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    networks:
+      - appnet
+
+volumes:
+  db-data:
+
+networks:
+  appnet:
+    driver: bridge

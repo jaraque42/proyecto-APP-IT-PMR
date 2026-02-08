@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Registrar</h2>
+
+<section>
+  <h3>Recepción</h3>
+  <form action="/receive" method="post">
+    <label>IMEI <input name="imei"></label><br>
+    <label>Recibido por <input name="received_by"></label><br>
+    <label>Notas <input name="notes"></label><br>
+    <button type="submit">Registrar recepción</button>
+  </form>
+</section>
+
+<section>
+  <h3>Entrega</h3>
+  <form action="/deliver" method="post">
+    <label>IMEI <input name="imei"></label><br>
+    <label>Entregado a <input name="delivered_to"></label><br>
+    <label>Notas <input name="notes"></label><br>
+    <button type="submit">Registrar entrega</button>
+  </form>
+</section>
+
+<section>
+  <h3>Incidencia</h3>
+  <form action="/incident" method="post">
+    <label>IMEI <input name="imei"></label><br>
+    <label>Descripción <input name="description"></label><br>
+    <label>Reportado por <input name="reported_by"></label><br>
+    <button type="submit">Registrar incidencia</button>
+  </form>
+</section>
+
+{% endblock %}

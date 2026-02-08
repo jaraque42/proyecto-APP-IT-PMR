@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Histórico de Incidencias</h2>
+<table>
+  <thead><tr><th>ID</th><th>IMEI</th><th>Descripción</th><th>Reportado por</th><th>Fecha</th></tr></thead>
+  <tbody>
+  {% for it in items %}
+    <tr>
+      <td>{{ it.id }}</td>
+      <td>{{ it.device.imei if it.device else '' }}</td>
+      <td>{{ it.description }}</td>
+      <td>{{ it.reported_by }}</td>
+      <td>{{ it.timestamp }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

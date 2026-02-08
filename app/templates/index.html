@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Registrar</h2>
+
+<section class="card">
+  <h3>Recepción</h3>
+  <form action="/receive" method="post">
+    <div class="form-row">
+      <label>IMEI <input name="imei" type="text"></label>
+      <label>Usuario Situm <input name="user_situm" type="text"></label>
+      <label>Nombre <input name="name" type="text"></label>
+      <label>Teléfono <input name="phone" type="tel"></label>
+      <label>Notas <input name="notes" type="text"></label>
+      <button type="submit">Registrar recepción</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Entrega</h3>
+  <form action="/deliver" method="post">
+    <div class="form-row">
+      <label>IMEI <input name="imei" type="text"></label>
+      <label>Usuario Situm <input name="user_situm" type="text"></label>
+      <label>Nombre (Entregado a) <input name="delivered_to" type="text"></label>
+      <label>Teléfono <input name="phone" type="tel"></label>
+      <label>Notas <input name="notes" type="text"></label>
+      <button type="submit">Registrar entrega</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Incidencia</h3>
+  <form action="/incident" method="post" enctype="multipart/form-data">
+    <div class="form-row">
+      <label>IMEI <input name="imei" type="text"></label>
+      <label>Usuario <input name="user" type="text"></label>
+      <label>Teléfono <input name="phone" type="tel"></label>
+      <label>Adjuntar (PDF/JPG) <input name="file" type="file" accept="application/pdf,image/jpeg,image/jpg"></label>
+      <label>Descripción <input name="description" type="text"></label>
+      <button type="submit">Registrar incidencia</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

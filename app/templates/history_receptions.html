@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Histórico de Recepciones</h2>
+<section class="card">
+<form method="get" class="filter-row">
+  <label>Desde <input type="date" name="start" value="{{ start or '' }}"></label>
+  <label>Hasta <input type="date" name="end" value="{{ end or '' }}"></label>
+  <label>IMEI <input type="text" name="imei" value="{{ imei or '' }}" placeholder="IMEI"></label>
+  <label>Nombre <input type="text" name="name" value="{{ name or '' }}" placeholder="Nombre"></label>
+  <label>Por página <select name="per_page">
+    {% for n in [10,20,50,100] %}
+      <option value="{{ n }}" {% if per_page==n %}selected{% endif %}>{{ n }}</option>
+    {% endfor %}
+  </select></label>
+  <button type="submit">Filtrar</button>
+  <a class="btn-link" href="{{ url_for('main.export_receptions', start=start, end=end, imei=imei, name=name) }}">Exportar CSV</a>
+  <a class="btn-link" href="{{ url_for('main.history_receptions') }}">Limpiar filtros</a>
+</form>
+<form id="bulk-form-receptions" method="post" action="{{ url_for('main.receptions_bulk_delete') }}">
+  <div class="table-wrap">
+  <table>
+  <thead><tr><th>ID</th><th>IMEI</th><th>Recibido por</th><th>Usuario Situm</th><th>Nombre</th><th>Teléfono</th><th>Fecha</th><th>Notas</th><th>Acciones</th></tr></thead>
+  <tbody>
+  {% for it in items %}
+    <tr style="background:var(--card-bg) !important; color:var(--text) !important">
+      <td><input type="checkbox" name="selected_ids" value="{{ it.id }}"> {{ it.id }}</td>
+      <td>{{ it.device_imei or (it.device.imei if it.device else '') }}</td>
+      <td>{{ it.received_by }}</td>
+      <td>{{ it.user_situm }}</td>
+      <td>{{ it.name }}</td>
+      <td>{{ it.phone }}</td>
+      <td>{{ it.timestamp }}</td>
+      <td>{{ it.notes }}</td>
+      <td>
+        {{ it.id }}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+  </div>
+  <div style="margin-top:8px">
+    <input type="password" name="password" placeholder="Contraseña" required>
+    <input type="hidden" name="start" value="{{ start or '' }}">
+    <input type="hidden" name="end" value="{{ end or '' }}">
+    <input type="hidden" name="imei" value="{{ imei or '' }}">
+    <input type="hidden" name="name" value="{{ name or '' }}">
+    <input type="hidden" name="per_page" value="{{ per_page }}">
+    <button type="submit" name="action" value="selected_partial">Borrar seleccionados (parcial)</button>
+    {% if current_user.is_admin %}
+      <button type="submit" name="action" value="selected_full">Borrar seleccionados (completo)</button>
+    {% endif %}
+    <button type="submit" name="action" value="all_partial">Borrar toda la tabla (parcial)</button>
+    {% if current_user.is_admin %}
+      <button type="submit" name="action" value="all_full">Borrar toda la tabla (completo)</button>
+    {% endif %}
+  </div>
+</form>
+</section>
+{% if pagination and pagination.pages > 1 %}
+<nav class="pagination">
+    {% if pagination.has_prev %}
+    <a href="?page={{ pagination.prev_num }}&per_page={{ per_page }}{% if start %}&start={{ start }}{% endif %}{% if end %}&end={{ end }}{% endif %}{% if imei %}&imei={{ imei }}{% endif %}{% if name %}&name={{ name }}{% endif %}">« Anterior</a>
+  {% endif %}
+  <span>Página {{ pagination.page }} de {{ pagination.pages }}</span>
+  {% if pagination.has_next %}
+    <a href="?page={{ pagination.next_num }}&per_page={{ per_page }}{% if start %}&start={{ start }}{% endif %}{% if end %}&end={{ end }}{% endif %}{% if imei %}&imei={{ imei }}{% endif %}{% if name %}&name={{ name }}{% endif %}">Siguiente »</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

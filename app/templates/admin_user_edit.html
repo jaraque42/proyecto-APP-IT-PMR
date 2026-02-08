@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Editar usuario</h2>
+<form method="post" action="{{ url_for('main.edit_user', user_id=user.id) }}" class="admin-form">
+  <label>Usuario <input name="username" type="text" value="{{ user.username }}" required></label>
+  <label>Nueva contraseña (dejar vacío para no cambiar) <input name="password" type="password"></label>
+  <label>Rol
+    <select name="role">
+      <option value="admin" {% if user.role=='admin' %}selected{% endif %}>Admin (gestión completa)</option>
+      <option value="operator" {% if user.role=='operator' %}selected{% endif %}>Operador (recepcionar y entregar)</option>
+      <option value="readonly" {% if user.role=='readonly' %}selected{% endif %}>Sólo lectura (ver históricos)</option>
+    </select>
+  </label>
+  <button type="submit">Guardar</button>
+  <a href="{{ url_for('main.admin_users') }}">Cancelar</a>
+</form>
+{% endblock %}

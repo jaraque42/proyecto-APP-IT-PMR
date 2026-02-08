@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>GES IT PMR</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <style>
+      :root{
+        /* Exact-ish palette from supplied logo */
+        --logo-purple-dark: #5b2d8b; /* deep purple */
+        --logo-purple-light: #8b4fc2; /* lighter purple */
+        --logo-magenta: #d93a6a; /* magenta/pink accent */
+        --logo-orange: #ff6a00; /* vivid orange */
+        --logo-yellow: #ffb03b; /* warm yellow */
+        --bg: linear-gradient(135deg,var(--logo-purple-light),#f7e9fb); /* soft gradient */
+        --panel: linear-gradient(90deg,var(--logo-purple-dark),var(--logo-purple-light));
+        --accent: var(--logo-orange);
+        --accent-2: var(--logo-yellow);
+        --muted: #8b78a8;
+        --text: #3a1844; /* dark purple text */
+        --card-bg: #ffffff;
+      }
+      html, body {height:100%; width:100%; max-width:100%; margin:0; padding:0}
+      body{background:var(--bg);color:var(--text);width:100%;max-width:100%;font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+      header{background:var(--panel);background-image:var(--panel);padding:14px 20px;border-bottom:1px solid rgba(43,22,64,0.06);display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;position:relative}
+      a{color:var(--accent)}
+      h1,h2{color:var(--text);margin:0;display:flex;align-items:center;gap:12px}
+      /* section titles inside cards */
+      .card h3{color:var(--text);margin:0 0 12px;font-size:1.05rem;font-weight:700}
+      /* center the main title in the header */
+      .site-title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;display:flex;align-items:center;gap:12px}
+      .site-logo{height:40px;width:auto;border-radius:6px;display:block;max-width:140px;object-fit:contain}
+      .logo-wrap{height:40px;overflow:visible;border-radius:6px;display:inline-flex;align-items:center;flex:0 0 auto;padding-right:8px}
+      main{padding:28px 36px;max-width:100% !important;width:100% !important;margin:0;box-sizing:border-box}
+      .card{background:var(--card-bg);padding:14px;border-radius:10px;margin-bottom:16px;border:1px solid rgba(43,22,64,0.06);max-width:100% !important;width:100% !important;box-shadow:0 6px 18px rgba(43,22,64,0.04)}
+      .form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+      /* filter-row used in history pages */
+      .filter-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+      .filter-row label{display:flex;flex-direction:column;align-items:flex-start}
+      /* ensure date inputs and selects use the light card background */
+      input[type=date], select, .filter-row input, .filter-row select{background:#fbf9ff;color:var(--text);border:1px solid rgba(43,22,64,0.06);padding:8px;border-radius:8px}
+      .filter-row .btn-link{background:transparent;color:var(--accent);padding:8px 12px;border-radius:8px}
+      /* login form inputs: white background and black text */
+      .login-form label{display:block;margin-bottom:8px}
+      .login-form input{background:#ffffff !important;color:#000000 !important;border:1px solid rgba(0,0,0,0.12) !important;padding:8px;border-radius:6px}
+      /* admin form inputs (password) */
+      .admin-form label{display:block;margin-bottom:8px}
+      .admin-form input{background:#ffffff !important;color:#000000 !important;border:1px solid rgba(0,0,0,0.12) !important;padding:8px;border-radius:6px}
+      /* show dropdown menu in header */
+      .top-nav{display:none}
+      .logo-left{display:flex;align-items:center;flex:0 0 auto}
+      .dropdown{position:relative}
+      .dropdown-button{background:var(--accent);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.12)}
+      .dropdown-button:hover{filter:brightness(0.97)}
+      .dropdown-button:focus{outline:3px solid rgba(255,106,0,0.18);outline-offset:2px}
+      .dropdown-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--card-bg);border:1px solid rgba(43,22,64,0.06);border-radius:8px;box-shadow:0 8px 24px rgba(43,22,64,0.08);min-width:180px;display:none;padding:8px;z-index:50}
+      .dropdown.open .dropdown-menu{display:block}
+      .dropdown-menu a{display:block;padding:8px 10px;color:var(--text);text-decoration:none;border-radius:6px}
+      .dropdown-menu a:hover{background:rgba(91,45,130,0.04)}
+      .header-right{display:flex;gap:12px;align-items:center}
+      .form-row label{display:flex;flex-direction:column;flex:1;min-width:160px}
+      input[type=text], input[type=tel], textarea, input[type=file]{background:#fbf9ff;color:var(--text);border:1px solid rgba(43,22,64,0.06);padding:8px;border-radius:8px}
+      button{background:var(--accent);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+      .btn-ghost{background:transparent;border:1px solid rgba(58,24,68,0.06);color:var(--text)}
+      table{width:100%;border-collapse:collapse;background:transparent}
+      table thead th{background:rgba(91,45,130,0.06);color:var(--text);font-weight:700}
+      /* force light rows inside cards to avoid dark/black backgrounds from external styles */
+      table tbody tr{background:transparent}
+      .card table tbody tr{background:var(--card-bg) !important}
+      .card table tbody tr:nth-child(even){background:var(--card-bg) !important}
+      .card table tbody tr:hover{background:rgba(91,45,130,0.03) !important}
+      /* ensure table cells inherit the light card background (override external frameworks) */
+      .card table tbody td, .card table tbody th{background:transparent !important}
+      .card table tbody td{background:var(--card-bg) !important}
+      table th, table td{color:var(--text)}
+      /* override any library container widths */
+      .container, .wrap, .content {max-width:100% !important; width:100% !important}
+      th,td{padding:10px;border-bottom:1px solid rgba(95, 51, 140, 0.04);text-align:left}
+      /* simple client-side validation messages */
+      .error{color:#d9534f}
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        // validate incident file input
+        const incidentForm = document.querySelector('form[action="/incident"]')
+        if(incidentForm){
+          incidentForm.addEventListener('submit', function(e){
+            const f = incidentForm.querySelector('input[name=file]')
+            if(f && f.files && f.files.length){
+              const file = f.files[0]
+              const allowed = ['application/pdf','image/jpeg']
+              const maxBytes = {{ config.MAX_CONTENT_LENGTH|default(16777216)|int }}
+              if(!allowed.includes(file.type)){
+                e.preventDefault(); alert('Tipo de archivo no permitido (solo PDF o JPG)'); return;
+              }
+              if(file.size > maxBytes){
+                e.preventDefault(); alert('Archivo demasiado grande'); return;
+              }
+            }
+          })
+        }
+        // basic horizontal form trimming
+        document.querySelectorAll('input[type=text], input[type=tel]').forEach(i=>{
+          i.addEventListener('blur', e=>{ e.target.value = e.target.value.trim() })
+        })
+        // header dropdown toggle
+        const menuBtn = document.getElementById('menuToggle')
+        const dropdown = document.querySelector('.dropdown')
+        if(menuBtn && dropdown){
+          menuBtn.addEventListener('click', function(e){
+            const open = dropdown.classList.toggle('open')
+            menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false')
+          })
+          document.addEventListener('click', function(ev){
+            if(!dropdown.contains(ev.target)){
+              dropdown.classList.remove('open')
+              menuBtn.setAttribute('aria-expanded','false')
+            }
+          })
+          document.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ dropdown.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false') } })
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <header>
+      <div class="logo-left"><span class="logo-wrap"><img class="site-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></span></div>
+      <h1 class="site-title">GES IT PMR</h1>
+      <div class="header-right">
+        <div class="dropdown" aria-haspopup="true">
+          <button id="menuToggle" class="dropdown-button" aria-expanded="false">Menú ▾</button>
+          <div class="dropdown-menu" role="menu">
+            <a role="menuitem" href="/">Inicio</a>
+            <a role="menuitem" href="/history/receptions">Hist. Recepciones</a>
+            <a role="menuitem" href="/history/deliveries">Hist. Entregas</a>
+            <a role="menuitem" href="/history/incidents">Hist. Incidencias</a>
+            <a role="menuitem" href="/admin/users">Admin</a>
+            <a role="menuitem" href="/logout">Salir</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul>
+          {% for category, msg in messages %}
+            <li><strong>{{ category }}:</strong> {{ msg }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
