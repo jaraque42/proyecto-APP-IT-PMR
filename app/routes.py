@@ -5,6 +5,7 @@ from app.models import Device, Reception, Delivery, Incident, User
 from datetime import datetime, timedelta
 import os
 from werkzeug.utils import secure_filename
+import re
 
 ALLOWED_EXT = {'pdf', 'jpg', 'jpeg'}
 
@@ -12,6 +13,46 @@ main = Blueprint('main', __name__)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
+
+
+def valid_imei(imei: str) -> bool:
+    if not imei:
+        return False
+    s = imei.strip()
+    return s.isdigit() and len(s) == 15
+
+
+def valid_user_situm(user: str) -> bool:
+    if not user:
+        return False
+    user = user.strip()
+    # require an email ending with @mitie.es (case-insensitive)
+    return re.match(r"^[^@\s]+@mitie\.es$", user, re.IGNORECASE) is not None
+
+
+def valid_name(name: str) -> bool:
+    if not name:
+        return False
+    name = name.strip()
+    # must be three words: apellido1 apellido2 nombre
+    parts = name.split()
+    if len(parts) != 3:
+        return False
+    # no uppercase, no digits, no commas or dots
+    if name != name.lower():
+        return False
+    if any(ch.isdigit() for ch in name):
+        return False
+    if ',' in name or '.' in name:
+        return False
+    return True
+
+
+def valid_phone(phone: str) -> bool:
+    if not phone:
+        return False
+    p = phone.strip()
+    return p.isdigit() and len(p) == 9
 
 
 @main.route('/export/receptions.csv')
@@ -173,6 +214,19 @@ def receive():
     if not imei:
         flash('IMEI requerido', 'warning')
         return redirect(url_for('main.index'))
+    # server-side validations
+    if not valid_imei(imei):
+        flash('IMEI inválido: debe contener 15 dígitos numéricos', 'warning')
+        return redirect(url_for('main.index'))
+    if not valid_user_situm(user_situm):
+        flash('Usuario Situm inválido: debe ser un email en el dominio mitie.es', 'warning')
+        return redirect(url_for('main.index'))
+    if not valid_name(name):
+        flash('Nombre inválido: debe ser "apellido1 apellido2 nombre", en minúsculas y sin números, comas ni puntos', 'warning')
+        return redirect(url_for('main.index'))
+    if not valid_phone(phone):
+        flash('Teléfono inválido: debe contener exactamente 9 dígitos', 'warning')
+        return redirect(url_for('main.index'))
     device = Device.query.filter_by(imei=imei).first()
     if not device:
         device = Device(imei=imei)
@@ -197,6 +251,19 @@ def deliver():
     if not imei:
         flash('IMEI requerido', 'warning')
         return redirect(url_for('main.index'))
+    # server-side validations
+    if not valid_imei(imei):
+        flash('IMEI inválido: debe contener 15 dígitos numéricos', 'warning')
+        return redirect(url_for('main.index'))
+    if not valid_user_situm(user_situm):
+        flash('Usuario Situm inválido: debe ser un email en el dominio mitie.es', 'warning')
+        return redirect(url_for('main.index'))
+    if not valid_name(name):
+        flash('Nombre inválido: debe ser "apellido1 apellido2 nombre", en minúsculas y sin números, comas ni puntos', 'warning')
+        return redirect(url_for('main.index'))
+    if not valid_phone(phone):
+        flash('Teléfono inválido: debe contener exactamente 9 dígitos', 'warning')
+        return redirect(url_for('main.index'))
     device = Device.query.filter_by(imei=imei).first()
     if not device:
         flash('Dispositivo no encontrado', 'warning')
@@ -218,6 +285,17 @@ def incident():
     f = request.files.get('file')
     if not imei:
         flash('IMEI requerido', 'warning')
+        return redirect(url_for('main.index'))
+    # server-side validations for incident reporter and phone
+    if not valid_imei(imei):
+        flash('IMEI inválido: debe contener 15 dígitos numéricos', 'warning')
+        return redirect(url_for('main.index'))
+    # reported_by may be an email (user) or a name; if it's an email, enforce mitie.es
+    if reported_by and '@' in reported_by and not valid_user_situm(reported_by):
+        flash('Usuario Situm inválido: si se indica email debe pertenecer a mitie.es', 'warning')
+        return redirect(url_for('main.index'))
+    if phone and not valid_phone(phone):
+        flash('Teléfono inválido: debe contener exactamente 9 dígitos', 'warning')
         return redirect(url_for('main.index'))
     device = Device.query.filter_by(imei=imei).first()
     if not device:
