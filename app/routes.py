@@ -206,7 +206,7 @@ def index():
 @login_required
 def receive():
     imei = request.form.get('imei')
-    received_by = request.form.get('received_by')
+    received_by = request.form.get('received_by') or (current_user.username if hasattr(current_user, 'username') else None)
     user_situm = request.form.get('user_situm')
     name = request.form.get('name')
     phone = request.form.get('phone')
