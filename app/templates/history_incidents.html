@@ -38,20 +38,49 @@
   </div>
 
   <div style="margin-top:8px">
-    <input type="password" name="password" placeholder="Contraseña" required>
+    <input type="hidden" name="password" value="">
+    <input type="hidden" name="action" value="">
     <input type="hidden" name="start" value="{{ start or '' }}">
     <input type="hidden" name="end" value="{{ end or '' }}">
     <input type="hidden" name="imei" value="{{ imei or '' }}">
     <input type="hidden" name="name" value="{{ name or '' }}">
     <input type="hidden" name="per_page" value="{{ per_page }}">
-    <button type="submit" name="action" value="selected_partial">Borrar seleccionados (parcial)</button>
     {% if current_user.is_admin %}
-      <button type="submit" name="action" value="selected_full">Borrar seleccionados (completo)</button>
+      <label style="margin-right:12px"><input type="checkbox" id="select-all-incidents"> Seleccionar todo</label>
+      <button type="button" id="delete-btn-incidents">Borrar seleccionados / todo</button>
     {% endif %}
-    <button type="submit" name="action" value="all_partial">Borrar toda la tabla (parcial)</button>
-    {% if current_user.is_admin %}
-      <button type="submit" name="action" value="all_full">Borrar toda la tabla (completo)</button>
-    {% endif %}
+  </div>
+  <script>
+    (function(){
+      const form = document.getElementById('bulk-form-incidents')
+      if(!form) return
+      const selectAll = document.getElementById('select-all-incidents')
+      const deleteBtn = document.getElementById('delete-btn-incidents')
+      function getRowCheckboxes(){ return Array.from(form.querySelectorAll('input[name="selected_ids"]')) }
+      if(selectAll){
+        selectAll.addEventListener('change', function(){
+          getRowCheckboxes().forEach(cb=> cb.checked = selectAll.checked)
+        })
+      }
+      if(deleteBtn){
+        deleteBtn.addEventListener('click', function(){
+          const actionInput = form.querySelector('input[name="action"]')
+          const passwordInput = form.querySelector('input[name="password"]')
+          if(selectAll && selectAll.checked){
+            actionInput.value = 'all_full'
+          } else {
+            const selected = getRowCheckboxes().filter(cb=>cb.checked)
+            if(selected.length === 0){ alert('No hay registros seleccionados. Marca alguno o selecciona "Seleccionar todo".'); return }
+            actionInput.value = 'selected_full'
+          }
+          const pwd = prompt('Contraseña de administrador para confirmar borrado:')
+          if(!pwd){ return }
+          passwordInput.value = pwd
+          form.submit()
+        })
+      }
+    })()
+  </script>
   </div>
 </form>
 
