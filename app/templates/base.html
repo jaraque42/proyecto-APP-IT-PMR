@@ -151,6 +151,32 @@
           document.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ closeMenu() } })
           window.addEventListener('resize', function(){ if(menu && menu.style.display==='block'){ openMenu() } })
         }
+
+          // Client-side validation for receive / deliver forms
+          function validImeiClient(v){ return /^[0-9]{15}$/.test((v||'').trim()) }
+          function validUserSitumClient(v){ return /^[^@\s]+@mitie\.es$/i.test((v||'').trim()) }
+          function validNameClient(v){ if(!v) return false; v = v.trim(); if(v !== v.toLowerCase()) return false; if(/[0-9]/.test(v)) return false; if(/[.,]/.test(v)) return false; const parts = v.split(/\s+/); return parts.length === 3 }
+          function validPhoneClient(v){ return /^[0-9]{9}$/.test((v||'').trim()) }
+
+          function attachFormValidation(selector){
+            const form = document.querySelector(selector)
+            if(!form) return
+            form.addEventListener('submit', function(e){
+              const imei = form.querySelector('[name=imei]') ? form.querySelector('[name=imei]').value : ''
+              const user = form.querySelector('[name=user_situm]') ? form.querySelector('[name=user_situm]').value : ''
+              const name = form.querySelector('[name=name]') ? form.querySelector('[name=name]').value : ''
+              const phone = form.querySelector('[name=phone]') ? form.querySelector('[name=phone]').value : ''
+              const errors = []
+              if(!validImeiClient(imei)) errors.push('IMEI inválido: debe tener 15 dígitos numéricos')
+              if(!validUserSitumClient(user)) errors.push('Usuario Situm inválido: debe ser un email en el dominio mitie.es')
+              if(!validNameClient(name)) errors.push('Nombre inválido: formato "apellido1 apellido2 nombre", solo minúsculas, sin números, comas ni puntos')
+              if(!validPhoneClient(phone)) errors.push('Teléfono inválido: debe contener exactamente 9 dígitos')
+              if(errors.length){ e.preventDefault(); alert(errors.join('\n')); return false }
+            })
+          }
+
+          attachFormValidation('form[action="/receive"]')
+          attachFormValidation('form[action="/deliver"]')
       })
     </script>
   </head>
