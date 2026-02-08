@@ -120,17 +120,36 @@
         const menuBtn = document.getElementById('menuToggle')
         const dropdown = document.querySelector('.dropdown')
         if(menuBtn && dropdown){
-          menuBtn.addEventListener('click', function(e){
-            const open = dropdown.classList.toggle('open')
-            menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false')
-          })
-          document.addEventListener('click', function(ev){
-            if(!dropdown.contains(ev.target)){
-              dropdown.classList.remove('open')
-              menuBtn.setAttribute('aria-expanded','false')
-            }
-          })
-          document.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ dropdown.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false') } })
+          // move menu to body so it's not clipped by stacking contexts
+          const menu = dropdown.querySelector('.dropdown-menu')
+          if(menu){
+            menu.style.position = 'fixed'
+            menu.style.display = 'none'
+            document.body.appendChild(menu)
+          }
+
+          function openMenu(){
+            if(!menu) return
+            const rect = menuBtn.getBoundingClientRect()
+            // ensure menu fits within viewport horizontally
+            menu.style.display = 'block'
+            menu.style.zIndex = '2147483647'
+            const mw = menu.offsetWidth || 200
+            let left = rect.right - mw
+            if(left < 8) left = 8
+            if(left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8
+            menu.style.left = left + 'px'
+            menu.style.top = (rect.bottom + 8) + 'px'
+            menuBtn.setAttribute('aria-expanded','true')
+          }
+
+          function closeMenu(){ if(menu){ menu.style.display = 'none' } menuBtn.setAttribute('aria-expanded','false') }
+
+          menuBtn.addEventListener('click', function(e){ e.stopPropagation(); if(menu && menu.style.display==='block'){ closeMenu() } else { openMenu() } })
+
+          document.addEventListener('click', function(ev){ if(menu && !menu.contains(ev.target) && ev.target !== menuBtn){ closeMenu() } })
+          document.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ closeMenu() } })
+          window.addEventListener('resize', function(){ if(menu && menu.style.display==='block'){ openMenu() } })
         }
       })
     </script>
